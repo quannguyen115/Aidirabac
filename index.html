@@ -19,8 +19,24 @@
     header {
       font-size: 24px;
       font-weight: bold;
-      margin-bottom: 40px;
+      margin-bottom: 20px;
       text-shadow: 2px 2px 5px #000;
+    }
+    #animationBox {
+      font-size: 26px;
+      margin-bottom: 30px;
+      padding: 15px;
+      background-color: rgba(0,0,0,0.6);
+      border-radius: 10px;
+      min-height: 50px;
+    }
+    #animationBox.blink {
+      animation: blink 0.8s infinite;
+    }
+    @keyframes blink {
+      0% { background-color: rgba(255, 255, 0, 0.8); color: black; }
+      50% { background-color: rgba(255, 165, 0, 0.9); color: white; }
+      100% { background-color: rgba(255, 255, 0, 0.8); color: black; }
     }
     #result {
       font-size: 28px;
@@ -78,12 +94,16 @@
 </head>
 <body>
   <header>Chương trình bốc số chọn xe Hải Vân Cát</header>
-  <div id="result">Chưa có xe được chọn</div>
+
+  <!-- Hiệu ứng chạy số -->
+  <div id="animationBox">⏳ Đang chờ...</div>
 
   <div class="button-group">
     <button onclick="pickRandom(false)">🎲 Bốc Thử</button>
     <button id="realButton" onclick="pickRandom(true)">✅ Bốc Thật</button>
   </div>
+
+  <div id="result">Chưa có xe được chọn</div>
 
   <div id="vehicleList">
     <h3>Danh sách xe</h3>
@@ -127,12 +147,12 @@
       { plate: "43H-09624", driver: "LX Lâm" },      
     ];
 
-    const excludedPlate = "43H-16524"; 
-
+    const excludedPlate = "43H-16524";
 
     const listElement = document.getElementById("list");
     const historyElement = document.getElementById("historyList");
     const resultElement = document.getElementById("result");
+    const animationBox = document.getElementById("animationBox");
     const realButton = document.getElementById("realButton");
 
     let realPicked = false;
@@ -150,25 +170,44 @@
         return;
       }
 
-      let index, vehicle;
-      do {
-        index = Math.floor(Math.random() * vehicles.length);
-        vehicle = vehicles[index];
-      } while (isReal && vehicle.plate === excludedPlate); // Loại bỏ nếu bốc thật
+      animationBox.classList.remove("blink");
+      resultElement.textContent = "⏳ Đang chọn xe...";
+      animationBox.textContent = "⏳ Đang quay số...";
 
-      const now = new Date();
-      const resultText = `${vehicle.plate} - ${vehicle.driver}`;
-      const timestamp = now.toLocaleString();
+      let index = 0;
+      let counter = 0;
+      const maxSpins = 25 + Math.floor(Math.random() * 10);
+      let interval = setInterval(() => {
+        const v = vehicles[index % vehicles.length];
+        animationBox.textContent = `🚐 ${v.plate} - ${v.driver}`;
+        index++;
+        counter++;
 
-      resultElement.textContent = `🚍 ${resultText}`;
+        if (counter >= maxSpins) {
+          clearInterval(interval);
 
-      if (isReal) {
-        realPicked = true;
-        realButton.disabled = true;
-        const li = document.createElement("li");
-        li.textContent = `✅ [Bốc Thật] ${timestamp} - ${resultText}`;
-        historyElement.prepend(li);
-      }
+          let selected;
+          do {
+            selected = vehicles[Math.floor(Math.random() * vehicles.length)];
+          } while (isReal && selected.plate === excludedPlate);
+
+          animationBox.textContent = `🎉 ${selected.plate} - ${selected.driver}`;
+          animationBox.classList.add("blink");
+
+          const now = new Date();
+          const timestamp = now.toLocaleString();
+          const resultText = `${selected.plate} - ${selected.driver}`;
+          resultElement.textContent = `🚍 ${resultText}`;
+
+          if (isReal) {
+            realPicked = true;
+            realButton.disabled = true;
+            const li = document.createElement("li");
+            li.textContent = `✅ [Bốc Thật] ${timestamp} - ${resultText}`;
+            historyElement.prepend(li);
+          }
+        }
+      }, 100);
     }
   </script>
 </body>
