@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bốc số chọn xe Hải Vân Cát</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-image: url('https://dulich3mien.vn/wp-content/uploads/2022/08/Bai-bien-My-Khe-10-768x614.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    header {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 40px;
+      text-shadow: 2px 2px 5px #000;
+    }
+    #result {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 20px 0;
+      background-color: rgba(0,0,0,0.6);
+      padding: 15px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 15px 25px;
+      font-size: 18px;
+      background-color: #ffcc00;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #ff9900;
+    }
+    button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+    #vehicleList, #history {
+      background-color: rgba(0,0,0,0.5);
+      margin-top: 30px;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    li {
+      margin: 5px 0;
+      padding: 5px;
+      border-bottom: 1px dashed #ccc;
+    }
+  </style>
+</head>
+<body>
+  <header>Chương trình bốc số chọn xe Hải Vân Cát</header>
+  <div id="result">Chưa có xe được chọn</div>
+
+  <div class="button-group">
+    <button onclick="pickRandom(false)">🎲 Bốc Thử</button>
+    <button id="realButton" onclick="pickRandom(true)">✅ Bốc Thật</button>
+  </div>
+
+  <div id="vehicleList">
+    <h3>Danh sách xe</h3>
+    <ul id="list"></ul>
+  </div>
+
+  <div id="history">
+    <h3>Lịch sử bốc số</h3>
+    <ul id="historyList"></ul>
+  </div>
+
+  <script>
+    const vehicles = [
+      { plate: "51B-123.01", driver: "Nguyễn Văn A" },
+      { plate: "51B-123.02", driver: "Trần Văn B" },
+      { plate: "51B-123.03", driver: "Lê Văn C" },
+      { plate: "51B-123.04", driver: "Phạm Văn D" },
+      { plate: "51B-123.05", driver: "Ngô Văn E" },
+      { plate: "51B-123.06", driver: "Đinh Văn F" },
+      { plate: "51B-123.07", driver: "Đỗ Văn G" },
+      { plate: "51B-123.08", driver: "Lý Văn H" },
+      { plate: "51B-123.09", driver: "Trịnh Văn I" },
+      { plate: "51B-123.10", driver: "Huỳnh Văn J" },
+      { plate: "51B-123.11", driver: "Nguyễn Văn K" },
+      { plate: "51B-123.12", driver: "Trần Văn L" },
+      { plate: "51B-123.13", driver: "Lê Văn M" },
+      { plate: "51B-123.14", driver: "Phạm Văn N" },
+      { plate: "51B-123.15", driver: "Ngô Văn O" },
+      { plate: "51B-123.16", driver: "Đinh Văn P" },
+      { plate: "51B-123.17", driver: "Đỗ Văn Q" },
+      { plate: "51B-123.18", driver: "Lý Văn R" },
+      { plate: "51B-123.19", driver: "Trịnh Văn S" },
+      { plate: "51B-123.20", driver: "Huỳnh Văn T" },
+      { plate: "51B-123.21", driver: "Nguyễn Văn U" },
+      { plate: "51B-123.22", driver: "Trần Văn V" },
+      { plate: "51B-123.23", driver: "Lê Văn W" },
+      { plate: "51B-123.24", driver: "Phạm Văn X" },
+      { plate: "51B-123.25", driver: "Ngô Văn Y" },
+      { plate: "51B-123.26", driver: "Đinh Văn Z" },
+      { plate: "51B-123.27", driver: "Đỗ Văn A1" },
+      { plate: "51B-123.28", driver: "Lý Văn B1" },
+      { plate: "51B-123.29", driver: "Trịnh Văn C1" },
+      { plate: "51B-123.30", driver: "Huỳnh Văn D1" },
+    ];
+
+    const usedIndexes = [];
+    let realPicked = false;
+
+    const listElement = document.getElementById("list");
+    const historyElement = document.getElementById("historyList");
+    const resultElement = document.getElementById("result");
+    const realButton = document.getElementById("realButton");
+
+    // Hiển thị danh sách xe ban đầu
+    vehicles.forEach(v => {
+      const li = document.createElement("li");
+      li.textContent = `${v.plate} - ${v.driver}`;
+      listElement.appendChild(li);
+    });
+
+    function pickRandom(isReal) {
+      if (isReal && realPicked) {
+        alert("Bạn chỉ được bốc thật 1 lần!");
+        return;
+      }
+
+      let index = Math.floor(Math.random() * vehicles.length);
+      const vehicle = vehicles[index];
+      const now = new Date();
+      const resultText = `${vehicle.plate} - ${vehicle.driver}`;
+      const timestamp = now.toLocaleString();
+
+      resultElement.textContent = `🚍 ${resultText}`;
+
+      if (isReal) {
+        realPicked = true;
+        realButton.disabled = true;
+        const li = document.createElement("li");
+        li.textContent = `✅ [Bốc Thật] ${timestamp} - ${resultText}`;
+        historyElement.prepend(li);
+      }
+    }
+  </script>
+</body>
+</html>
