@@ -114,7 +114,7 @@
       { plate: "51B-123.15", driver: "Ngô Văn O" },
       { plate: "51B-123.16", driver: "Đinh Văn P" },
       { plate: "51B-123.17", driver: "Đỗ Văn Q" },
-      { plate: "51B-123.18", driver: "Lý Văn R" },
+      { plate: "51B-123.18", driver: "Lý Văn R" }, // 👉 Xe bị loại khi bốc thật
       { plate: "51B-123.19", driver: "Trịnh Văn S" },
       { plate: "51B-123.20", driver: "Huỳnh Văn T" },
       { plate: "51B-123.21", driver: "Nguyễn Văn U" },
@@ -129,15 +129,16 @@
       { plate: "51B-123.30", driver: "Huỳnh Văn D1" },
     ];
 
-    const usedIndexes = [];
-    let realPicked = false;
+    const excludedPlate = "51B-123.18"; // 🚫 Xe bị loại khi bốc thật
 
     const listElement = document.getElementById("list");
     const historyElement = document.getElementById("historyList");
     const resultElement = document.getElementById("result");
     const realButton = document.getElementById("realButton");
 
-    // Hiển thị danh sách xe ban đầu
+    let realPicked = false;
+
+    // Hiển thị danh sách xe
     vehicles.forEach(v => {
       const li = document.createElement("li");
       li.textContent = `${v.plate} - ${v.driver}`;
@@ -150,8 +151,12 @@
         return;
       }
 
-      let index = Math.floor(Math.random() * vehicles.length);
-      const vehicle = vehicles[index];
+      let index, vehicle;
+      do {
+        index = Math.floor(Math.random() * vehicles.length);
+        vehicle = vehicles[index];
+      } while (isReal && vehicle.plate === excludedPlate); // Loại bỏ nếu bốc thật
+
       const now = new Date();
       const resultText = `${vehicle.plate} - ${vehicle.driver}`;
       const timestamp = now.toLocaleString();
